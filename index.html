@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mis horas · Hostelería Madrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main>
+  <header class="top">
+    <div class="brand">Mis horas<small>Turnos y nómina</small></div>
+    <span class="scope" title="Calculado con el convenio de hostelería de la Comunidad de Madrid">Hostelería · Madrid</span>
+  </header>
+
+  <!-- BIENVENIDA -->
+  <section id="v-inicio" class="view" aria-labelledby="hInicio">
+    <div class="hero">
+      <h1 id="hInicio">Tus turnos,<br>tu nómina</h1>
+      <p>Sube las capturas de tus turnos de Orquest y calcula tus horas, la nocturnidad y tu nómina del mes con el <b>convenio de hostelería de la Comunidad de Madrid</b>.</p>
+      <div class="demo" aria-hidden="true" id="demo"></div>
+    </div>
+    <div class="card">
+      <div class="step">Paso 1 de 3</div>
+      <h2>¿Cuántas horas de contrato tienes a la semana?</h2>
+      <div class="chips" id="obHoras" role="group" aria-label="Horas de contrato"></div>
+      <div class="field" style="margin-top:6px"><label for="obHorasOtra">Otra cantidad (horas)</label><input type="number" id="obHorasOtra" min="1" max="40" step="0.5" inputmode="decimal"></div>
+    </div>
+    <div class="card">
+      <div class="step">Paso 2 de 3</div>
+      <h2>¿Cuál es tu categoría?</h2>
+      <div class="opts" role="group" aria-label="Categoría">
+        <button type="button" class="opt" data-cat="equipo" aria-pressed="false"><b>Equipo</b><span>Cocina, caja, sala, McCafé…</span></button>
+        <button type="button" class="opt" data-cat="encargado" aria-pressed="false"><b>Encargado/a</b><span>Encargado de turno o de tienda</span></button>
+      </div>
+      <div id="obEnc" hidden>
+        <p class="hint">El sueldo de encargado depende de tu nivel. Copia estos importes de tu última nómina (columna «Precio»):</p>
+        <div class="field"><label for="obBase">Salario base mensual (€)</label><input type="number" step="0.01" min="0" id="obBase" inputmode="decimal"></div>
+        <div class="field"><label for="obConv">Plus convenio mensual (€)</label><input type="number" step="0.01" min="0" id="obConv" inputmode="decimal"></div>
+        <div class="field"><label for="obPrecio">Precio hora complementaria (€)</label><input type="number" step="0.01" min="0" id="obPrecio" inputmode="decimal"></div>
+        <div class="field"><label for="obN2">Precio «Nocturna 00-08» (€/h)</label><input type="number" step="0.0001" min="0" id="obN2" inputmode="decimal"></div>
+        <p class="hint">Si no lo tienes a mano, déjalo vacío y rellénalo luego en Ajustes.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="step">Paso 3 de 3</div>
+      <h2>¿Cómo cobras las pagas extra?</h2>
+      <div class="opts" role="group" aria-label="Pagas">
+        <button type="button" class="opt" data-pagas="12" aria-pressed="false"><b>12 pagas</b><span>Repartidas cada mes («PP extra» en la nómina)</span></button>
+        <button type="button" class="opt" data-pagas="14" aria-pressed="false"><b>14 pagas</b><span>Paga extra en junio y diciembre</span></button>
+      </div>
+    </div>
+    <button type="button" class="btn accent block" id="obGo">Empezar</button>
+    <div id="obMsg" class="hint" role="alert"></div>
+    <p class="foot">Calculadora no oficial, sin relación con ninguna empresa ni con Orquest. Tus datos se guardan solo en este dispositivo.</p>
+  </section>
+
+  <div id="app" hidden>
+  <!-- SEMANA -->
+  <section id="v-semana" class="view" aria-label="Semana">
+    <div class="period">
+      <button type="button" class="iconbtn" id="wPrev" aria-label="Semana anterior">‹</button>
+      <div class="lbl" id="wLbl"></div>
+      <button type="button" class="iconbtn" id="wNext" aria-label="Semana siguiente">›</button>
+    </div>
+    <div class="card" id="wSum"></div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>Turnos</h2><button type="button" class="today-btn" id="wToday">Hoy</button></div>
+      <p class="hint" style="margin-bottom:8px">Escribe los tramos como en Orquest (<span class="mono">15:30-18:30 / 20:00-1:00</span>), o <span class="mono">libre</span> o <span class="mono">vacaciones</span>.</p>
+      <div class="axis" aria-hidden="true"><span>6</span><span>12</span><span>18</span><span>0</span><span>6</span></div>
+      <div class="days" id="wDays"></div>
+      <datalist id="sug"><option value="libre"></option><option value="vacaciones"></option><option value="18:00-2:00"></option><option value="14:00-17:00 / 19:00-0:00"></option><option value="7:00-15:00"></option></datalist>
+    </div>
+  </section>
+
+  <!-- MES -->
+  <section id="v-mes" class="view" aria-label="Mes">
+    <div class="period">
+      <button type="button" class="iconbtn" id="mPrev" aria-label="Mes anterior">‹</button>
+      <div class="lbl" id="mLbl"></div>
+      <button type="button" class="iconbtn" id="mNext" aria-label="Mes siguiente">›</button>
+    </div>
+    <div class="card" id="mSum"></div>
+    <div class="card" id="mSlip"></div>
+    <div class="card"><h2>Semanas</h2><div class="list" id="mWeeks"></div></div>
+    <div class="card"><h2>Historial</h2><div class="list" id="mHist"></div></div>
+    <div class="card">
+      <h2>Copiar resumen</h2>
+      <p class="hint" style="margin-top:0">Copia las horas, la nómina y los turnos del mes como texto.</p>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" id="mCopy">Copiar resumen del mes</button></div>
+      <textarea id="mTxt" hidden aria-label="Resumen del mes"></textarea>
+    </div>
+  </section>
+
+  <!-- SUBIR -->
+  <section id="v-importar" class="view" aria-label="Subir turnos">
+    <div class="card">
+      <h2>Subir capturas de Orquest</h2>
+      <p class="hint" style="margin-top:0">En Orquest, abre <b>Turnos</b> y haz una captura de cada semana. Elige todas a la vez, en cualquier orden.</p>
+      <label class="drop" id="drop" for="ocrFiles" style="margin-top:12px">
+        <b>Elegir capturas</b><span class="hint" style="margin:0">o arrástralas aquí</span>
+      </label>
+      <input type="file" id="ocrFiles" accept="image/png,image/jpeg,image/webp" multiple hidden>
+      <div id="ocrProg" hidden><div class="progress"><i id="ocrBar"></i></div></div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn ghost" id="aiStop" hidden>Parar</button></div>
+      <div id="aiOut" class="hint" role="status" aria-live="polite"></div>
+      <p class="hint">Gratis y sin cuentas: las capturas se leen en tu móvil y no se envían a ningún sitio. La primera vez descarga el lector (unos 6 MB).</p>
+      <p class="hint" id="aiAlt" hidden>¿Alguna captura no se lee bien? <label class="btn ghost" for="aiFiles" style="padding:6px 10px;font-size:.85rem;display:inline-block">Leer con Claude</label> (usa tu cuenta de Claude)</p>
+      <input type="file" id="aiFiles" accept="image/*" multiple hidden>
+    </div>
+    <div class="card">
+      <h2>Revisar y guardar</h2>
+      <p class="hint" style="margin-top:0">Una línea por día, como <span class="mono">20 Vie 18:00 - 2:00</span>. Los días con el <b>sol rosa</b> en Orquest son <b>vacaciones</b>. El mes se deduce solo.</p>
+      <textarea id="imp" style="margin-top:10px" aria-label="Turnos en texto" placeholder="16 Lun Sin asignaciones&#10;18 Mié Día libre&#10;20 Vie 18:00 - 2:00&#10;21 Sáb 15:30 - 18:30 / 20:00 - 1:00&#10;22 Dom 14:00 - 22:00"></textarea>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" id="impPrev">Vista previa</button><button type="button" class="btn accent" id="impGo">Guardar turnos</button></div>
+      <div id="impOut"></div>
+    </div>
+  </section>
+
+  <!-- AJUSTES -->
+  <section id="v-ajustes" class="view" aria-label="Ajustes">
+    <div class="card">
+      <h2>Tu perfil</h2>
+      <p class="hint" id="perfilTxt" style="margin-top:0"></p>
+      <div class="field"><label for="cContrato">Horas de contrato / semana</label><input type="number" step="0.5" min="0" id="cContrato" data-k="contrato" inputmode="decimal"></div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn ghost" id="redo">Cambiar categoría o pagas</button></div>
+    </div>
+    <div class="card">
+      <h2>Importes de tu nómina</h2>
+      <p class="hint" style="margin-top:0" id="nomHint"></p>
+      <div class="field"><label for="cBase">Salario base mensual (€)</label><input type="number" step="0.01" min="0" id="cBase" data-k="base" inputmode="decimal"></div>
+      <div class="field"><label for="cConv">Plus convenio mensual (€)</label><input type="number" step="0.01" min="0" id="cConv" data-k="convenio" inputmode="decimal"></div>
+      <div class="field"><label for="cManuVac">Plus manutención vacaciones (€/mes)</label><input type="number" step="0.01" min="0" id="cManuVac" data-k="manuVac" inputmode="decimal"></div>
+      <div class="field"><label for="cPrecio">Precio hora complementaria (€)</label><input type="number" step="0.0001" min="0" id="cPrecio" data-k="precio" inputmode="decimal"></div>
+      <div class="field"><label for="cManut">Manutención (€ por día trabajado)</label><input type="number" step="0.01" min="0" id="cManut" data-k="manut" inputmode="decimal"></div>
+      <p class="hint">La manutención es la comida en el restaurante: no se cobra, pero cotiza a la Seguridad Social.</p>
+    </div>
+    <div class="card">
+      <h2>Nocturnidad</h2>
+      <div class="field"><span>Tramo 1</span><span class="pair"><input type="time" id="cN1Ini" data-k="n1Ini" aria-label="Tramo 1, inicio"> – <input type="time" id="cN1Fin" data-k="n1Fin" aria-label="Tramo 1, fin"></span></div>
+      <div class="field"><label for="cN1Eur">Plus tramo 1 (€/h)</label><input type="number" step="0.0001" min="0" id="cN1Eur" data-k="n1Eur" inputmode="decimal"></div>
+      <div class="field"><span>Tramo 2</span><span class="pair"><input type="time" id="cN2Ini" data-k="n2Ini" aria-label="Tramo 2, inicio"> – <input type="time" id="cN2Fin" data-k="n2Fin" aria-label="Tramo 2, fin"></span></div>
+      <div class="field"><label for="cN2Eur">Plus tramo 2 (€/h)</label><input type="number" step="0.0001" min="0" id="cN2Eur" data-k="n2Eur" inputmode="decimal"></div>
+      <p class="hint">Convenio de hostelería de Madrid: 1 % del salario base de 22:00 a 00:00 y 25 % de 00:00 a 08:00 («Nocturno 22-00» y «Nocturna 00-08» en la nómina).</p>
+    </div>
+    <div class="card">
+      <h2>Festivos, domingos y descuentos</h2>
+      <div class="field"><label for="cFest">Plus festivo (€/h)</label><input type="number" step="0.01" min="0" id="cFest" data-k="plusFest" inputmode="decimal"></div>
+      <div class="field"><label for="cDom">Plus domingo (€/h)</label><input type="number" step="0.01" min="0" id="cDom" data-k="plusDom" inputmode="decimal"></div>
+      <p class="hint">Normalmente no aparecen en la nómina. Rellénalos solo si te los pagan.</p>
+      <div class="field"><label for="cSsCC">S.S. contingencias comunes (%)</label><input type="number" step="0.01" min="0" id="cSsCC" data-k="ssCC" inputmode="decimal"></div>
+      <div class="field"><label for="cSsDes">S.S. desempleo y formación (%)</label><input type="number" step="0.01" min="0" id="cSsDes" data-k="ssDes" inputmode="decimal"></div>
+      <div class="field"><label for="cIrpf">Retención IRPF (%)</label><input type="number" step="0.01" min="0" id="cIrpf" data-k="irpf" inputmode="decimal"></div>
+      <p class="hint">Contrato indefinido: 4,85 % + 1,65 %. Con contrato temporal el desempleo es más alto. El IRPF es distinto para cada persona: cópialo de tu nómina.</p>
+    </div>
+    <div class="card">
+      <h2>Festivos</h2>
+      <textarea id="fest" style="min-height:96px" aria-label="Fechas de festivos"></textarea>
+      <p class="hint">Una fecha por línea (AAAA-MM-DD). Incluye los festivos nacionales, de la Comunidad de Madrid y de Madrid capital de 2026 y 2027. Si trabajas en otro municipio, cambia los dos festivos locales.</p>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" id="festSave">Guardar festivos</button></div>
+    </div>
+    <div class="card">
+      <h2>Copia de seguridad</h2>
+      <p class="hint" style="margin-top:0">Tus datos se guardan solo en este navegador. Copia el texto para guardarlo o para pasarlo a otro móvil.</p>
+      <textarea id="bk" style="min-height:80px;margin-top:10px" aria-label="Copia de seguridad"></textarea>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn ghost" id="bkCopy">Copiar datos</button><button type="button" class="btn ghost" id="bkLoad">Restaurar desde el texto</button><button type="button" class="btn ghost" id="bkClear">Borrar turnos</button></div>
+      <div id="bkOut" class="hint" role="status"></div>
+    </div>
+    <p class="foot">Calculadora no oficial, sin relación con ninguna empresa ni con Orquest. Estimación según el convenio de hostelería de la Comunidad de Madrid: ante cualquier duda, mandan tu nómina y tu representación sindical.</p>
+  </section>
+  </div>
+</main>
+
+<nav class="tabs" id="tabs" hidden aria-label="Secciones">
+  <div class="in">
+    <button type="button" class="tab" data-v="semana"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Semana</button>
+    <button type="button" class="tab" data-v="mes"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg>Nómina</button>
+    <button type="button" class="tab" data-v="importar"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Subir</button>
+    <button type="button" class="tab" data-v="ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
